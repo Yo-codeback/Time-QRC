@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>QR 時間同步工具 ⏱️📸</title>
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      text-align: center;
+      background-color: #fff8dc;
+      color: #222;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 10px;
+    }
+
+    #time {
+      font-size: 2.8em;
+      font-weight: bold;
+      margin: 15px 0;
+      letter-spacing: 2px;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    select {
+      font-size: 1em;
+      padding: 6px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📷 時間 QR 對時頁</h1>
+  <div>
+    <label for="format">時間格式：</label>
+    <select id="format">
+      <option value="YYYY-MM-DD HH:mm:ss">西元年月日 時:分:秒</option>
+      <option value="YYYY/MM/DD HH:mm:ss">西元年月日（斜線）</option>
+      <option value="YYYY年MM月DD日 HH點mm分ss秒">中文格式</option>
+      <option value="民國YY年MM月DD日 HH:mm:ss">民國格式</option>
+    </select>
+  </div>
+  <div id="time">讀取中...</div>
+  <div id="qrcode"></div>
+
+  <!-- 引入 moment.js 與 QRCode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment/locale/zh-tw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <script>
+    moment.locale('zh-tw');
+    const timeDiv = document.getElementById('time');
+    const qrDiv = document.getElementById('qrcode');
+    const formatSelect = document.getElementById('format');
+
+    let qr = new QRCode(qrDiv, {
+      width: 256,
+      height: 256
+    });
+
+    function getNowFormatted(fmt) {
+      const now = moment();
+      if (fmt === '民國YY年MM月DD日 HH:mm:ss') {
+        const roc = now.year() - 1911;
+        return `民國${roc}年${now.format('MM月DD日 HH:mm:ss')}`;
+      }
+      return now.format(fmt);
+    }
+
+    function updateTimeAndQR() {
+      const fmt = formatSelect.value;
+      const currentTime = getNowFormatted(fmt);
+      timeDiv.textContent = currentTime;
+      qr.clear();
+      qr.makeCode(currentTime);
+    }
+
+    setInterval(updateTimeAndQR, 1000);
+    formatSelect.addEventListener('change', updateTimeAndQR);
+    updateTimeAndQR(); // 初始化
+  </script>
+</body>
+</html>
